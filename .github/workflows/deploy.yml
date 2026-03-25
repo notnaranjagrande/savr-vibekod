@@ -1,0 +1,22 @@
+name: Deploy
+ 
+on:
+  push:
+    branches: [main]
+ 
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+ 
+      - name: Inject API key
+        run: |
+          sed -i "s|sk-ant-XXXX-din-nyckel-här|${{ secrets.ANTHROPIC_API_KEY }}|g" savr-sentiment.html
+ 
+      - name: Deploy to GitHub Pages
+        uses: peaceiris/actions-gh-pages@v3
+        with:
+          github_token: ${{ secrets.GITHUB_TOKEN }}
+          publish_dir: .
+ 
