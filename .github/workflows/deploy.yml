@@ -1,22 +1,37 @@
 name: Deploy
- 
+
 on:
   push:
     branches: [main]
- 
+
+permissions:
+  contents: write
+
 jobs:
   deploy:
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
- 
+
       - name: Inject API key
+        env:
+          KEY: ${{ secrets.ANTHROPIC_API_KEY }}
         run: |
-          sed -i "s|sk-ant-XXXX-din-nyckel-här|${{ secrets.ANTHROPIC_API_KEY }}|g" savr-sentiment.html
- 
+          python3 -c "
+          import os
+          key = os.environ['KEY']
+          with open('savr-sentiment.html', 'r') as f:
+              content = f.read()
+          content = content.replace('sk-ant-XXXX-din-nyckel-här', key)
+          with open('savr-sentiment.html', 'w') as f:
+              f.write(content)
+          print('Key injected successfully')
+          "
+
       - name: Deploy to GitHub Pages
         uses: peaceiris/actions-gh-pages@v3
         with:
           github_token: ${{ secrets.GITHUB_TOKEN }}
           publish_dir: .
- 
+          exclude_assets: '.github'
+          force_orphan: true
